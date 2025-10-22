@@ -125,6 +125,7 @@
       <div class="form-group">
         <label for="confirm-password">Confirmer le mot de passe</label>
         <input type="password" id="confirm-password" name="confirm_password" required minlength="6" />
+        <input type="email" id="email" name="email" required  />
       </div>
       <button type="submit" class="btn">S'inscrire</button>
     </form>
