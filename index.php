@@ -1,137 +1,96 @@
+<?php 
+require_once 'conx.php';
+
+if (isset($_GET['notf'])) {
+    $n_id = $_GET['notf'];
+    $req = $pdo->prepare("UPDATE notifications SET read_n = '0' WHERE id = ?");
+    $req->execute([$n_id]);
+    header("Location: index.php");
+    exit;
+}
+
+$data = $pdo->prepare("SELECT * FROM notifications ORDER BY id DESC");
+$data->execute();
+$result = $data->fetchAll();
+
+$data1 = $pdo->prepare("SELECT * FROM notifications WHERE read_n = 1");
+$data1->execute();
+$count = $data1->rowCount();
+?>
+
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inscription</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications</title>
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
     body {
-      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
       padding: 20px;
+      background-color: white;
     }
-
-    .form-container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      width: 100%;
-      max-width: 450px;
+    .notification-item {
+      padding: 8px 15px;
+      border-bottom: 1px solid #eee;
     }
-
-    .form-container h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #333;
+    .notification-item:last-child {
+      border-bottom: none;
     }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
+    .notification-item a {
+      color: inherit;
+      text-decoration: none;
       display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: #555;
     }
-
-    .form-group input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
-      transition: border-color 0.3s;
-    }
-
-    .form-group input:focus {
-      outline: none;
-      border-color: #2575fc;
-      box-shadow: 0 0 0 2px rgba(37, 117, 252, 0.2);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      background: #2575fc;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .btn:hover {
-      background: #1a68e8;
-    }
-
-    .login-link {
-      text-align: center;
-      margin-top: 20px;
+    .notification-item.read {
       color: #666;
     }
-
-    .login-link a {
-      color: #2575fc;
-      text-decoration: none;
-      font-weight: 600;
+    .notification-item.unread {
+      background-color: #f9ecec;
+      border-left: 3px solid red;
     }
-
-    .login-link a:hover {
-      text-decoration: underline;
+    .dropdown-menu {
+      min-width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
     }
-
-    @media (max-width: 480px) {
-      .form-container {
-        padding: 20px;
-      }
+    .empty-notif {
+      padding: 10px 15px;
+      color: #888;
+      font-style: italic;
     }
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Créer un compte</h2>
-    <form action="#" method="POST">
-      <div class="form-group">
-        <label for="prenom">Prénom</label>
-        <input type="text" id="prenom" name="prenom" required />
-      </div>
-      <div class="form-group">
-        <label for="nom">Nom</label>
-        <input type="text" id="nom" name="nom" required />
-      </div>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required />
-      </div>
-      <div class="form-group">
-        <label for="password">Mot de passe</label>
-        <input type="password" id="password" name="password" required minlength="6" />
-      </div>
-      <div class="form-group">
-        <label for="confirm-password">Confirmer le mot de passe</label>
-        <input type="password" id="confirm-password" name="confirm_password" required minlength="6" />
-        <input type="email" id="email" name="email" required  />
-      </div>
-      <button type="submit" class="btn">S'inscrire</button>
-    </form>
-    <div class="login-link">
-      Vous avez déjà un compte ? <a href="#">Se connecter</a>
-    </div>
-  </div>
+
+<div class="dropdown">
+  <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+    🔔 <?php if ($count > 0): ?><span class="badge badge-danger"><?php echo $count; ?></span><?php endif; ?>
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    <?php if (empty($result)): ?>
+      <li class="empty-notif">Aucune notification</li>
+    <?php else: ?>
+      <?php foreach ($result as $value): ?>
+        <?php if ($value['read_n'] == '1'): ?>
+          <li class="notification-item unread">
+            <a href="?notf=<?php echo htmlspecialchars($value['id']); ?>">
+              <?php echo htmlspecialchars($value['title']); ?>
+            </a>
+          </li>
+        <?php else: ?>
+          <li class="notification-item read">
+            <?php echo htmlspecialchars($value['title']); ?>
+          </li>
+        <?php endif; ?>
+      <?php endforeach; ?>
+    <?php endif; ?>
+  </ul>
+</div>
+
+<script src="bootstrap/js/jquery.min.js"></script>
+<script src="bootstrap/js/bootstrap.min.js"></script>
+
 </body>
 </html>
