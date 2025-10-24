@@ -44,7 +44,6 @@ if (isset($_POST['btn-poster'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Poster</title>
-    <!-- Bootstrap 3 CSS -->
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <style>
         body {

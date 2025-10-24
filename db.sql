@@ -1,3 +1,9 @@
 CREATE DATABASE notification;
 	USE notification;
-	
+CREATE TABLE medias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    chemin VARCHAR(255) NOT NULL,
+    date_ajout TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
